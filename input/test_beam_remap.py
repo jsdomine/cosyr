@@ -8,7 +8,7 @@ from input.misc import *
 
 ####################### Preprocessing ##########################
 
-run_name = "test_beam_remap_np1e4"
+run_name = "test_beam_remap_nalpha_71_dev100"
 
 ## electron and trajectory
 gamma=100
@@ -20,7 +20,7 @@ psi_max = 1e-4 #0.42   # max retarded
 scaled_alpha = l_beam*1e-6*gamma**3.0 * 3.0 # scaled alpha range of mesh 
 scaled_chi = d_beam*1e-6*gamma**2.0 * 2.0 # scaled chi range of mesh
 if (mpi_rank==0) : print("scaled_alpha={}, scaled_chi={}".format(scaled_alpha, scaled_chi))
-npt_alpha = 101 #1001  # number of mesh points along alpha
+npt_alpha = 71 #1001  # number of mesh points along alpha
 npt_chi = 3  #101   # number of mesh points along chi
 wpc = [1,1]         # wavlets per cell
 if (mpi_rank==0) : print("npt_alpha={}, npt_chi={}".format(npt_alpha, npt_chi))
