@@ -5,12 +5,28 @@
 ## generate test wavelets
 def gen_test_wavelets(scaled_alpha, scaled_chi, n_alpha, n_chi, _gamma=10, unscale_coord=True, flatten = True, num_fields=1) :
     import numpy as np
+    from scipy import stats
 
     print("wavelet parameters:", scaled_alpha, scaled_chi, n_alpha, n_chi, _gamma)
     peak_factor =  1.0 
     peak_shift = 0.0
     #print("peak_factor=", peak_factor, "peak_shift=", peak_shift)
     #if (np.mod(n_alpha,2) ==1) : peak_shift =  0.5*scaled_alpha/n_alpha
+
+    # -- start modif --
+    # # alpha_axis = np.linspace(-scaled_alpha/2.0, scaled_alpha/2.0, n_alpha)
+    # mean = scaled_alpha * 0.5
+    # print("mean={}".format(mean))
+    # dev = 100 # 190
+    # dist = stats.norm(loc=mean, scale=dev)
+    # bounds = dist.cdf([0, scaled_alpha])
+    # pp = np.linspace(*bounds, n_alpha)
+    # vals = dist.ppf(pp)
+    # alpha_axis = (vals - mean)
+    # print(alpha_axis)
+    #
+    # # print(alpha_axis)
+    # -- end modif --
 
     alpha_axis = np.linspace(-scaled_alpha/2.0, scaled_alpha/2.0, n_alpha)
     chi_axis = np.linspace(-scaled_chi/2.0, scaled_chi/2.0, n_chi)
