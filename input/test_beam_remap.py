@@ -8,7 +8,7 @@ from input.misc import *
 
 ####################### Preprocessing ##########################
 
-run_name = "test_beam_remap_nalpha_71_dev100"
+run_name = "test_beam_remap_adapt_alpha"
 
 ## electron and trajectory
 gamma=100
@@ -20,7 +20,7 @@ psi_max = 1e-4 #0.42   # max retarded
 scaled_alpha = l_beam*1e-6*gamma**3.0 * 3.0 # scaled alpha range of mesh 
 scaled_chi = d_beam*1e-6*gamma**2.0 * 2.0 # scaled chi range of mesh
 if (mpi_rank==0) : print("scaled_alpha={}, scaled_chi={}".format(scaled_alpha, scaled_chi))
-npt_alpha = 71 #1001  # number of mesh points along alpha
+npt_alpha = 101 #1001  # number of mesh points along alpha
 npt_chi = 3  #101   # number of mesh points along chi
 wpc = [1,1]         # wavlets per cell
 if (mpi_rank==0) : print("npt_alpha={}, npt_chi={}".format(npt_alpha, npt_chi))
@@ -37,7 +37,7 @@ emission_interval = num_step - 1   # only emit wavefronts at simulation end (tes
 ## remap
 remap_interval = num_step - 1       # interval of doing remapping (in time steps)
 remap_scatter = False               # use scatter weights form for remap
-remap_adaptive = False              # use adaptive smoothing length for remap
+remap_adaptive = True              # use adaptive smoothing length for remap
 remap_scaling[0] = 1.0              # base support/smoothing length scaling factor
 remap_scaling[1] = 1.0              # base support/smoothing length scaling factor
 remap_verbose = False               # print remap statistics
