@@ -14,24 +14,48 @@ def gen_test_wavelets(scaled_alpha, scaled_chi, n_alpha, n_chi, _gamma=10, unsca
     #if (np.mod(n_alpha,2) ==1) : peak_shift =  0.5*scaled_alpha/n_alpha
 
     # -- start modif --
-    # # alpha_axis = np.linspace(-scaled_alpha/2.0, scaled_alpha/2.0, n_alpha)
+    # alpha_axis = np.linspace(-scaled_alpha/2.0, scaled_alpha/2.0, n_alpha)
     # mean = scaled_alpha * 0.5
     # print("mean={}".format(mean))
-    # dev = 100 # 190
+    # dev = 190 # 190
     # dist = stats.norm(loc=mean, scale=dev)
     # bounds = dist.cdf([0, scaled_alpha])
     # pp = np.linspace(*bounds, n_alpha)
     # vals = dist.ppf(pp)
     # alpha_axis = (vals - mean)
     # print(alpha_axis)
-    #
-    # # print(alpha_axis)
-    # -- end modif --
+    # # -- end modif --
 
-    alpha_axis = np.linspace(-scaled_alpha/2.0, scaled_alpha/2.0, n_alpha)
-    chi_axis = np.linspace(-scaled_chi/2.0, scaled_chi/2.0, n_chi)
+    # -- start modif --
+    # alpha_axis = np.linspace(-scaled_alpha/2.0, scaled_alpha/2.0, n_alpha)
+    # chi_axis = np.linspace(-scaled_chi/2.0, scaled_chi/2.0, n_chi)
+    # alpha = alpha_axis/_gamma**3.0
+    # psi, eta = retard_angle_1D_ultra_relativistic(alpha)
+    # -- end modif
+
+    # -- start modif --
+    alpha_max = (scaled_alpha*0.5)/1e6*_gamma**3.0
+    number_of_wavelets_pos = 101  # for positive alpha axis
+    number_of_wavelets_neg = 101   # for negative alpha axis
+
+    psi_max=(24.0*alpha_max/_gamma**3.0)**(1.0/3.0)
+    psi_max_negative_axis = alpha_max/_gamma**3.0/2.0
+
+    print(alpha_max, psi_max, psi_max_negative_axis)
+
+    psi_for_pos_axis = np.linspace(0.0, psi_max, number_of_wavelets_pos)
+    psi_for_neg_axis = np.linspace(psi_max_negative_axis, 0.0, number_of_wavelets_neg, endpoint=False)
+
+    alpha_axis = np.zeros(number_of_wavelets_pos + number_of_wavelets_neg)
+    alpha_axis[:number_of_wavelets_neg] = -psi_for_neg_axis*2.0
+    alpha_axis[number_of_wavelets_neg:] = psi_for_pos_axis**3.0/24.0
+
+    alpha_axis *= _gamma**3.0
     alpha = alpha_axis/_gamma**3.0
     psi, eta = retard_angle_1D_ultra_relativistic(alpha)
+    chi_axis = np.linspace(-scaled_chi/2.0, scaled_chi/2.0, n_chi)
+    # -- end modif
+
     beta = np.sqrt(1.0-_gamma**(-2.0))
 
     wy, wx = np.meshgrid(chi_axis, alpha_axis)
@@ -81,7 +105,6 @@ def retard_angle_1D_ultra_relativistic(alpha_axis) :
 
     psi = np.zeros_like(alpha_axis)
     eta = np.zeros_like(alpha_axis)
-
     positive_axis = (alpha_axis>0)
     negative_axis = (alpha_axis<0)
     psi[positive_axis] = (24.0*alpha_axis[positive_axis])**(1.0/3.0)
