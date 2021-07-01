@@ -33,10 +33,12 @@ def gen_test_wavelets(scaled_alpha, scaled_chi, n_alpha, n_chi, _gamma=10, unsca
     # psi, eta = retard_angle_1D_ultra_relativistic(alpha)
     # -- end modif
 
+    print("n_alpha={}, n_chi={}".format(n_alpha, n_chi))
+
     # -- start modif --
     alpha_max = (scaled_alpha*0.5)/1e6*_gamma**3.0
-    number_of_wavelets_pos = 101  # for positive alpha axis
-    number_of_wavelets_neg = 101   # for negative alpha axis
+    number_of_wavelets_pos = int(n_alpha/2.0)  # for positive alpha axis
+    number_of_wavelets_neg = int(n_alpha/2.0)   # for negative alpha axis
 
     psi_max=(24.0*alpha_max/_gamma**3.0)**(1.0/3.0)
     psi_max_negative_axis = alpha_max/_gamma**3.0/2.0
@@ -51,16 +53,20 @@ def gen_test_wavelets(scaled_alpha, scaled_chi, n_alpha, n_chi, _gamma=10, unsca
     alpha_axis[number_of_wavelets_neg:] = psi_for_pos_axis**3.0/24.0
 
     alpha_axis *= _gamma**3.0
-    alpha = alpha_axis/_gamma**3.0
+    shifted_alpha_axis = peak_factor*(alpha_axis + peak_shift)
+    alpha = shifted_alpha_axis/_gamma**3.0
     psi, eta = retard_angle_1D_ultra_relativistic(alpha)
     chi_axis = np.linspace(-scaled_chi/2.0, scaled_chi/2.0, n_chi)
+
+    np.set_printoptions(suppress=True)
+    print(shifted_alpha_axis)
     # -- end modif
 
     beta = np.sqrt(1.0-_gamma**(-2.0))
 
-    wy, wx = np.meshgrid(chi_axis, alpha_axis)
+    wy, wx = np.meshgrid(chi_axis, shifted_alpha_axis)
     field = np.ones_like(wx) 
-    shifted_alpha_axis = peak_factor*(alpha_axis + peak_shift)
+
     #print(shifted_alpha_axis[(np.int(n_alpha/2)-5):(np.int(n_alpha/2)+5)])
     #field = np.transpose(field.T/(np.sign(shifted_alpha_axis)*(shifted_alpha_axis)**2.0))
     #field = np.transpose(field.T*shifted_alpha_axis)
@@ -78,7 +84,8 @@ def gen_test_wavelets(scaled_alpha, scaled_chi, n_alpha, n_chi, _gamma=10, unsca
     # full lw potential
     #field = np.transpose(field.T*(beta*(1.0-beta*beta*np.cos(alpha + psi)) / psi /(2.0-beta*np.sin(eta))))
 
-    filtered_x = np.abs(wx) < 100000.0 
+    #filtered_x = np.abs(wx) < 100000.0
+    filtered_x = np.abs(wx) > 3.0
     wx_filtered = wx[filtered_x]
     wy_filtered = wy[filtered_x]
     fld_filtered = field[filtered_x]
