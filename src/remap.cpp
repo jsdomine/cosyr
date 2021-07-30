@@ -37,6 +37,12 @@ Remap::Remap(Input& in_input,
   for (int i = 1; i <= num_fields; ++i) {
     fields.emplace_back("fld" + std::to_string(i));
   }
+      
+  // JD: Uniform matrix for nonadaptive smoothing lengths (assumes gather)
+  hmatrix.resize(mesh.num_points);
+  Kokkos::parallel_for(HostRange(0, mesh.num_points), [&](int i) {
+    hmatrix[i] = Matrix(1, h);
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -183,20 +189,23 @@ Wonton::Point<DIM> Remap::deduce_local_coords(int particle) const {
 /* -------------------------------------------------------------------------- */
 Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) const {
 
+  // JD: shortcut for nonadaptive case
+  if (not input.remap.adaptive) return hmatrix;
+  
   static_assert(DIM == 2, "dimension not yet supported");
 
-  auto& swarm = input.remap.scatter ? wave : grid;
+  auto& swarm = grid; //input.remap.scatter ? wave : grid; // JD: assume gather-only
   int const num_points = swarm.num_particles();
   double const one_third = 1./3.;
   Wonton::vector<Matrix> result(num_points);
 
   // deduce the offset to the mesh point coordinate from the current particle
   // position when computing the adaptive smoothing lengths.
-  auto const offset = (input.remap.adaptive ? deduce_local_coords(particle)
-                                            : Wonton::Point<DIM>(0.,0.));
+  auto const offset = deduce_local_coords(particle);
 
   // offset on longitudinal coordinates to avoid the spiky region
   double const alpha_min = 12e-6;
+  
   // scaling factor for smoothing length to cover the right end of the domain
   double const h_scaling = 1.5 * 225.;
 
@@ -204,7 +213,7 @@ Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) cons
     auto const p = swarm.get_particle_coordinates(i);
     auto h_adap = h;
     double const alpha = p[0] - offset[0];
-    if (input.remap.adaptive and alpha > alpha_min) {
+    if (alpha > alpha_min) {
       double const psi = std::pow(24. * alpha, one_third);
       h_adap[0] = h_scaling * h[0] *
                   (std::pow(psi, 3.)/6. + psi/gamma/gamma - alpha)
@@ -220,8 +229,8 @@ Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) cons
 void Remap::run(int particle, bool accumulate, bool rescale, double scaling) {
 
   // regression parameters
-  auto const weight_center = input.remap.scatter ? WeightCenter::Scatter
-                                                 : WeightCenter::Gather;
+  auto const weight_center = WeightCenter::Gather;
+    //input.remap.scatter ? WeightCenter::Scatter : WeightCenter::Gather; // JD: assume gather-only
 
   auto smoothing_lengths = compute_smoothing_length(particle);
 
