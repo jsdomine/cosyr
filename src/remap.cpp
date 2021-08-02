@@ -37,12 +37,6 @@ Remap::Remap(Input& in_input,
   for (int i = 1; i <= num_fields; ++i) {
     fields.emplace_back("fld" + std::to_string(i));
   }
-      
-  // JD: Uniform matrix for nonadaptive smoothing lengths (assumes gather)
-  hmatrix.resize(mesh.num_points);
-  Kokkos::parallel_for(HostRange(0, mesh.num_points), [&](int i) {
-    hmatrix[i] = Matrix(1, h);
-  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -187,6 +181,19 @@ Wonton::Point<DIM> Remap::deduce_local_coords(int particle) const {
 }
 
 /* -------------------------------------------------------------------------- */
+void Remap::populate_uniform_smoothing_lengths() {
+  
+  int const num_points = input.remap.scatter ? wave.num_particles()
+                                             : grid.num_particles();
+  
+  //When nonadaptive, compute_smoothing_lengths will return this uniform matrix.
+  uniform_smoothing_lengths.resize(num_points);
+  Kokkos::parallel_for(HostRange(0, num_points), [&](int i) {
+    uniform_smoothing_lengths[i] = Matrix(1, h);
+  });
+}
+
+/* -------------------------------------------------------------------------- */
 Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) const {
 
   static_assert(DIM == 2, "dimension not yet supported");
@@ -296,6 +303,7 @@ void Remap::interpolate(int step, double scaling) {
       print_info(input.wavelets.count);
       collect_subcycle_wavelets();
       collect_grid();
+      if (not input.remap.adaptive) populate_uniform_smoothing_lengths();
       run(0, accumulate, rescale, 1.0);
       print_progress();
 
