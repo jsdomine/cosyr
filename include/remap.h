@@ -59,6 +59,12 @@ private:
    *
    */
   void collect_grid();
+  
+  /**
+   * @brief Populate a matrix of uniform smoothing lengths (nonadaptive).
+   *
+   */
+  void populate_uniform_smoothing_lengths();
 
   /**
    * @brief Compute smoothing lengths for each point.
@@ -71,7 +77,7 @@ private:
    * @param particle: index of particle emitting the set of wavelets.
    */
   Wonton::vector<Matrix> compute_smoothing_length(int particle) const;
-
+  
   /**
    * @brief Deduce the local coordinates (x',y') of the current particle.
    *
@@ -116,11 +122,10 @@ private:
   std::vector<double> h = {1.0, 1.0};
 
   /**
-   * @brief Uniform matrix of nonadaptive smoothing lengths
+   * @brief Uniform matrix of smoothing lengths for nonadaptive case.
    *
    */
-  Wonton::vector<Matrix> hmatrix;
-  // JD: Assumes gather only; size is mesh size.
+  Wonton::vector<Matrix> uniform_smoothing_lengths;
   
   /**
    * @brief Number of fields to remap.
@@ -214,4 +219,3 @@ private:
 };
 
 } // namespace cosyr
-
