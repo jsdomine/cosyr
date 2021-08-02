@@ -38,11 +38,13 @@ Remap::Remap(Input& in_input,
     fields.emplace_back("fld" + std::to_string(i));
   }
       
-  // JD: Uniform matrix for nonadaptive smoothing lengths (assumes gather)
-  hmatrix.resize(mesh.num_points);
-  Kokkos::parallel_for(HostRange(0, mesh.num_points), [&](int i) {
-    hmatrix[i] = Matrix(1, h);
-  });
+  // JD: Uniform matrix for nonadaptive smoothing lengths. Gather only.
+  if (not input.remap.scatter) {
+    uniform_h.resize(mesh.num_points);
+    Kokkos::parallel_for(HostRange(0, mesh.num_points), [&](int i) {
+      uniform_h[i] = Matrix(1, h);
+    });
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -192,7 +194,7 @@ Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) cons
   static_assert(DIM == 2, "dimension not yet supported");
   
   // JD: shortcut for nonadaptive case
-  if (not input.remap.adaptive) return hmatrix;
+  if (not input.remap.adaptive and not input.remap.scatter) return uniform_h;
   
   auto& swarm = input.remap.scatter ? wave : grid;
   int const num_points = swarm.num_particles();
