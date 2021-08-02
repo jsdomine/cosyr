@@ -189,12 +189,12 @@ Wonton::Point<DIM> Remap::deduce_local_coords(int particle) const {
 /* -------------------------------------------------------------------------- */
 Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) const {
 
+  static_assert(DIM == 2, "dimension not yet supported");
+  
   // JD: shortcut for nonadaptive case
   if (not input.remap.adaptive) return hmatrix;
   
-  static_assert(DIM == 2, "dimension not yet supported");
-
-  auto& swarm = grid; //input.remap.scatter ? wave : grid; // JD: assume gather-only
+  auto& swarm = input.remap.scatter ? wave : grid;
   int const num_points = swarm.num_particles();
   double const one_third = 1./3.;
   Wonton::vector<Matrix> result(num_points);
@@ -229,8 +229,8 @@ Wonton::vector<Remap::Matrix> Remap::compute_smoothing_length(int particle) cons
 void Remap::run(int particle, bool accumulate, bool rescale, double scaling) {
 
   // regression parameters
-  auto const weight_center = WeightCenter::Gather;
-    //input.remap.scatter ? WeightCenter::Scatter : WeightCenter::Gather; // JD: assume gather-only
+  auto const weight_center = input.remap.scatter ? WeightCenter::Scatter
+                                                 : WeightCenter::Gather;
 
   auto smoothing_lengths = compute_smoothing_length(particle);
 
