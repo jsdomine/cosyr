@@ -116,11 +116,10 @@ private:
   std::vector<double> h = {1.0, 1.0};
 
   /**
-   * @brief Uniform matrix of nonadaptive smoothing lengths
+   * @brief Uniform matrix of smoothing lengths (nonadaptive, gather-only).
    *
    */
-  Wonton::vector<Matrix> hmatrix;
-  // JD: Assumes gather only; size is mesh size.
+  Wonton::vector<Matrix> uniform_h;
   
   /**
    * @brief Number of fields to remap.
