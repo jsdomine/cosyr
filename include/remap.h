@@ -116,7 +116,7 @@ private:
   std::vector<double> h = {1.0, 1.0};
 
   /**
-   * @brief Uniform matrix for nonadaptive smoothing lengths
+   * @brief Uniform matrix of nonadaptive smoothing lengths
    *
    */
   Wonton::vector<Matrix> hmatrix;
